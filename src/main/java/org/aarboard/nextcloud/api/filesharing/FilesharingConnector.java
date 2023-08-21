@@ -284,4 +284,25 @@ public class FilesharingConnector
     {
         return connectorCommon.executeDelete(SHARES_PART, Integer.toString(shareId), null, XMLAnswerParser.getInstance(XMLAnswer.class));
     }
+
+    /**
+     * Change permissions of the shared resource
+     *
+     * @param shareId unique identifier of the share
+     * @return true if the operation succeeded
+     */
+    public boolean editPermissions(int shareId, SharePermissions permissions) {
+        return NextcloudResponseHelper.isStatusCodeOkay(editPermissionsAsync(shareId, permissions));
+    }
+
+    public CompletableFuture<XMLAnswer> editPermissionsAsync(int shareId, SharePermissions permissions) {
+        List<NameValuePair> postParams = new LinkedList<>();
+        if (permissions != null) {
+            postParams.add(new BasicNameValuePair("permissions", Integer.toString(permissions.getCurrentPermission())));
+            postParams.add(
+                    new BasicNameValuePair("attributes", jsonSerializer.toString(permissions.getAttributes())));
+        }
+        return connectorCommon.executePut(SHARES_PART, Integer.toString(shareId), postParams,
+                XMLAnswerParser.getInstance(XMLAnswer.class));
+    }
 }
