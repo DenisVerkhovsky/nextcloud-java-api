@@ -16,21 +16,23 @@
  */
 package org.aarboard.nextcloud.api.filesharing;
 
+import org.aarboard.nextcloud.api.ServerConfig;
+import org.aarboard.nextcloud.api.exception.MoreThanOneShareFoundException;
+import org.aarboard.nextcloud.api.provisioning.ShareData;
+import org.aarboard.nextcloud.api.utils.ConnectorCommon;
+import org.aarboard.nextcloud.api.utils.JsonSerializer;
+import org.aarboard.nextcloud.api.utils.NextcloudResponseHelper;
+import org.aarboard.nextcloud.api.utils.XMLAnswer;
+import org.aarboard.nextcloud.api.utils.XMLAnswerParser;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import org.aarboard.nextcloud.api.ServerConfig;
-import org.aarboard.nextcloud.api.exception.MoreThanOneShareFoundException;
-import org.aarboard.nextcloud.api.provisioning.ShareData;
-import org.aarboard.nextcloud.api.utils.ConnectorCommon;
-import org.aarboard.nextcloud.api.utils.NextcloudResponseHelper;
-import org.aarboard.nextcloud.api.utils.XMLAnswer;
-import org.aarboard.nextcloud.api.utils.XMLAnswerParser;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 /**
  *
@@ -49,8 +51,11 @@ public class FilesharingConnector
 
     private final ConnectorCommon connectorCommon;
 
+    private final JsonSerializer jsonSerializer;
+
     public FilesharingConnector(ServerConfig serverConfig) {
         this.connectorCommon = new ConnectorCommon(serverConfig);
+        this.jsonSerializer = new JsonSerializer();
     }
 
     /**
@@ -199,6 +204,8 @@ public class FilesharingConnector
         if (permissions != null)
         {
             postParams.add(new BasicNameValuePair("permissions", Integer.toString(permissions.getCurrentPermission())));
+            postParams.add(new BasicNameValuePair("attributes",
+                    jsonSerializer.toString(permissions.getAttributes())));
         }
 
         return connectorCommon.executePost(SHARES_PART, postParams, XMLAnswerParser.getInstance(SingleShareXMLAnswer.class));
