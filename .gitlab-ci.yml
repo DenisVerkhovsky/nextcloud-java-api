@@ -1,0 +1,63 @@
+# For merge requests do not `deploy` but only run `verify`.
+# See https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
+variables:
+  GIT_DEPTH: 1
+  GIT_STRATEGY: clone
+  VARIABLES_FILE: variables.env
+  THREADS: -T10C
+
+stages:
+  - test
+  - deploy
+
+test:
+  stage: test
+  tags:
+    - build
+  script:
+    - mvn install ${THREADS}
+    - mvn test -Dmaven.test.skip=false ${THREADS} -Ptests
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME !~ /^refactoring\/version-upgrade.*$/'
+  artifacts:
+    expire_in: 1 week
+    when: always
+    paths:
+      - ./**/target/site/
+    reports:
+      junit:
+        - ./**/target/surefire-reports/TEST-*.xml
+
+dependency-check:
+  stage: test
+  tags:
+    - build
+  script:
+    - mvn dependency-check:aggregate ${THREADS} -PsonarReports
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push" && ($CI_COMMIT_BRANCH  == "dev" || $CI_COMMIT_BRANCH  =~ /^release\/.*$/)'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME !~ /^refactoring\/version-upgrade.*$/'
+  artifacts:
+    expire_in: 1 week
+    when: always
+    paths:
+      - ./owasp-dependency-check-logs
+
+deploy:
+  stage: deploy
+  tags:
+    - build
+  script:
+    - mvn install ${THREADS}
+    - mvn deploy -P gitlab-repository ${THREADS} -Ptests
+  only:
+    - dev
+    - /^release\/.*$/
+  artifacts:
+    expire_in: 1 week
+    when: always
+    paths:
+      - ./**/target/site/
+    reports:
+      junit:
+        - ./**/target/surefire-reports/TEST-*.xml

@@ -23,6 +23,9 @@
         <jaxb-runtime.version>3.0.2</jaxb-runtime.version>
         <jackson.version>2.14.1</jackson.version>
         <netbeans.hint.license>gpl30</netbeans.hint.license>
+        <maven.project.repository.url>
+            https://gitlab.devops.telekom.de/api/v4/projects/${CI_PROJECT_ID}/packages/maven
+        </maven.project.repository.url>
     </properties>
     <name>NextCloud Java API library</name>
     <description>Java api library to access nextcloud features from java applications</description>
@@ -177,7 +180,32 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>    
+        <profile>
+            <id>gitlab-repository</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <distributionManagement>
+                <repository>
+                    <id>gitlab-maven</id>
+                    <name>${build.repository.name}</name>
+                    <url>${maven.project.repository.url}</url>
+                </repository>
+                <snapshotRepository>
+                    <id>gitlab-maven</id>
+                    <name>${build.repository.name}</name>
+                    <url>${maven.project.repository.url}</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+    </profiles>
+
+    <repositories>
+        <repository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.devops.telekom.de/api/v4/groups/13877/-/packages/maven</url>
+        </repository>
+    </repositories>
     <build>
         <plugins>
             <plugin>
