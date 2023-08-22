@@ -16,21 +16,23 @@
  */
 package org.aarboard.nextcloud.api.filesharing;
 
+import org.aarboard.nextcloud.api.ServerConfig;
+import org.aarboard.nextcloud.api.exception.MoreThanOneShareFoundException;
+import org.aarboard.nextcloud.api.provisioning.ShareData;
+import org.aarboard.nextcloud.api.utils.ConnectorCommon;
+import org.aarboard.nextcloud.api.utils.JsonSerializer;
+import org.aarboard.nextcloud.api.utils.NextcloudResponseHelper;
+import org.aarboard.nextcloud.api.utils.XMLAnswer;
+import org.aarboard.nextcloud.api.utils.XMLAnswerParser;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import org.aarboard.nextcloud.api.ServerConfig;
-import org.aarboard.nextcloud.api.exception.MoreThanOneShareFoundException;
-import org.aarboard.nextcloud.api.provisioning.ShareData;
-import org.aarboard.nextcloud.api.utils.ConnectorCommon;
-import org.aarboard.nextcloud.api.utils.NextcloudResponseHelper;
-import org.aarboard.nextcloud.api.utils.XMLAnswer;
-import org.aarboard.nextcloud.api.utils.XMLAnswerParser;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 /**
  *
@@ -49,8 +51,11 @@ public class FilesharingConnector
 
     private final ConnectorCommon connectorCommon;
 
+    private final JsonSerializer jsonSerializer;
+
     public FilesharingConnector(ServerConfig serverConfig) {
         this.connectorCommon = new ConnectorCommon(serverConfig);
+        this.jsonSerializer = new JsonSerializer();
     }
 
     /**
@@ -199,6 +204,8 @@ public class FilesharingConnector
         if (permissions != null)
         {
             postParams.add(new BasicNameValuePair("permissions", Integer.toString(permissions.getCurrentPermission())));
+            postParams.add(new BasicNameValuePair("attributes",
+                    jsonSerializer.toString(permissions.getAttributes())));
         }
 
         return connectorCommon.executePost(SHARES_PART, postParams, XMLAnswerParser.getInstance(SingleShareXMLAnswer.class));
@@ -276,5 +283,26 @@ public class FilesharingConnector
     public CompletableFuture<XMLAnswer> deleteShareAsync(int shareId)
     {
         return connectorCommon.executeDelete(SHARES_PART, Integer.toString(shareId), null, XMLAnswerParser.getInstance(XMLAnswer.class));
+    }
+
+    /**
+     * Change permissions of the shared resource
+     *
+     * @param shareId unique identifier of the share
+     * @return true if the operation succeeded
+     */
+    public boolean editPermissions(int shareId, SharePermissions permissions) {
+        return NextcloudResponseHelper.isStatusCodeOkay(editPermissionsAsync(shareId, permissions));
+    }
+
+    public CompletableFuture<XMLAnswer> editPermissionsAsync(int shareId, SharePermissions permissions) {
+        List<NameValuePair> postParams = new LinkedList<>();
+        if (permissions != null) {
+            postParams.add(new BasicNameValuePair("permissions", Integer.toString(permissions.getCurrentPermission())));
+            postParams.add(
+                    new BasicNameValuePair("attributes", jsonSerializer.toString(permissions.getAttributes())));
+        }
+        return connectorCommon.executePut(SHARES_PART, Integer.toString(shareId), postParams,
+                XMLAnswerParser.getInstance(XMLAnswer.class));
     }
 }

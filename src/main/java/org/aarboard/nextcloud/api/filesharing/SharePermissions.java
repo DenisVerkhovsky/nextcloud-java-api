@@ -16,6 +16,9 @@
  */
 package org.aarboard.nextcloud.api.filesharing;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * https://docs.nextcloud.com/server/11/developer_manual/core/ocs-share-api.html
  * @author a.schild
@@ -41,6 +44,7 @@ public class SharePermissions {
     }
 
     private final int currentPermission;
+    private final List<SharePermissionsAttribute> attributes = new ArrayList<>();
 
     public SharePermissions(int currentPermission) {
         this.currentPermission = currentPermission;
@@ -53,6 +57,15 @@ public class SharePermissions {
             calculatedPermission += permission.getIntValue();
         }
         this.currentPermission = calculatedPermission;
+    }
+
+    public void addAttribute(SharePermissionsAttribute.Scope scope, SharePermissionsAttribute.Key key,
+            boolean enabled) {
+        attributes.add(new SharePermissionsAttribute(scope, key, enabled));
+    }
+
+    public List<SharePermissionsAttribute> getAttributes() {
+        return attributes;
     }
 
     public boolean hasAllRights()
