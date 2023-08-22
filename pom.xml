@@ -24,8 +24,9 @@
         <jackson.version>2.14.1</jackson.version>
         <netbeans.hint.license>gpl30</netbeans.hint.license>
         <maven.project.repository.url>
-            https://gitlab.devops.telekom.de/api/v4/projects/${CI_PROJECT_ID}/packages/maven
+            ${MAVEN_REPO_LINK}
         </maven.project.repository.url>
+        <jaxb.runtime.version>2.3.1</jaxb.runtime.version>
     </properties>
     <name>NextCloud Java API library</name>
     <description>Java api library to access nextcloud features from java applications</description>
@@ -47,6 +48,11 @@
   
   
     <dependencies>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxb.runtime.version}</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -203,7 +209,7 @@
     <repositories>
         <repository>
             <id>gitlab-maven</id>
-            <url>https://gitlab.devops.telekom.de/api/v4/groups/13877/-/packages/maven</url>
+            <url>${TPAM_REGISTRY}</url>
         </repository>
     </repositories>
     <build>
