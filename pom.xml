@@ -26,7 +26,6 @@
         <maven.project.repository.url>
             ${MAVEN_REPO_LINK}
         </maven.project.repository.url>
-        <jaxb.runtime.version>2.3.1</jaxb.runtime.version>
         <skipTests>true</skipTests>
     </properties>
     <name>NextCloud Java API library</name>
@@ -49,11 +48,6 @@
   
   
     <dependencies>
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>${jaxb.runtime.version}</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
