@@ -1,5 +1,6 @@
 # For merge requests do not `deploy` but only run `verify`.
 # See https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
+
 variables:
   GIT_DEPTH: 1
   GIT_STRATEGY: clone
