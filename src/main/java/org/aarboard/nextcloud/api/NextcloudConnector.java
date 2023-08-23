@@ -16,13 +16,6 @@
  */
 package org.aarboard.nextcloud.api;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import org.aarboard.nextcloud.api.config.ConfigConnector;
 import org.aarboard.nextcloud.api.filesharing.FilesharingConnector;
 import org.aarboard.nextcloud.api.filesharing.Share;
@@ -30,14 +23,37 @@ import org.aarboard.nextcloud.api.filesharing.SharePermissions;
 import org.aarboard.nextcloud.api.filesharing.ShareType;
 import org.aarboard.nextcloud.api.filesharing.SharesXMLAnswer;
 import org.aarboard.nextcloud.api.filesharing.SingleShareXMLAnswer;
-import org.aarboard.nextcloud.api.provisioning.*;
-import org.aarboard.nextcloud.api.utils.*;
+import org.aarboard.nextcloud.api.provisioning.GroupListAnswer;
+import org.aarboard.nextcloud.api.provisioning.ProvisionConnector;
+import org.aarboard.nextcloud.api.provisioning.ShareData;
+import org.aarboard.nextcloud.api.provisioning.User;
+import org.aarboard.nextcloud.api.provisioning.UserData;
+import org.aarboard.nextcloud.api.provisioning.UserDetailsAnswer;
+import org.aarboard.nextcloud.api.provisioning.UserDetailsListAnswer;
+import org.aarboard.nextcloud.api.provisioning.UserListAnswer;
+import org.aarboard.nextcloud.api.utils.ConnectorCommon;
+import org.aarboard.nextcloud.api.utils.JsonListAnswer;
+import org.aarboard.nextcloud.api.utils.JsonVoidAnswer;
+import org.aarboard.nextcloud.api.utils.NextcloudResponseHelper;
+import org.aarboard.nextcloud.api.utils.XMLAnswer;
 import org.aarboard.nextcloud.api.webdav.Files;
 import org.aarboard.nextcloud.api.webdav.Folders;
 import org.aarboard.nextcloud.api.webdav.ResourceProperties;
 import org.aarboard.nextcloud.api.webdav.pathresolver.NextcloudVersion;
 import org.aarboard.nextcloud.api.webdav.pathresolver.WebDavPathResolver;
 import org.aarboard.nextcloud.api.webdav.pathresolver.WebDavPathResolverBuilder;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class NextcloudConnector {
 
