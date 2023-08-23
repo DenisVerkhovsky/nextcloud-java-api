@@ -35,6 +35,10 @@ import java.time.LocalDate;
 public class Share
 {
     private int         id;
+    @XmlElement(name = "file_source")
+    private int fileSource;
+    @XmlElement(name = "item_source")
+    private int itemSource;
     @XmlElement(name = "share_type")
     private ShareType   shareType;
     @XmlElement(name = "uid_owner")
@@ -132,6 +136,14 @@ public class Share
 
     public String getMimetype() {
         return mimetype;
+    }
+
+    public int getFileSource() {
+        return fileSource;
+    }
+
+    public int getItemSource() {
+        return itemSource;
     }
 
     private static final class SharePermissionsAdapter extends XmlAdapter<Integer, SharePermissions>
