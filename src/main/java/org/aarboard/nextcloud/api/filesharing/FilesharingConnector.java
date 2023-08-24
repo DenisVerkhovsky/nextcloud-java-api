@@ -49,9 +49,6 @@ public class FilesharingConnector
     private final static String ROOT_PART= "ocs/v1.php/apps/files_sharing/api/v1/";
     private final static String SHARES_PART= ROOT_PART+"shares";
 
-    private final static String SYSTEM_TAGS = "/remote.php/dav/systemtags";
-    private final static String SYSTEM_TAGS_RELATIONS = "/remote.php/dav/systemtags-relations/files";
-
     private final ConnectorCommon connectorCommon;
 
     private final JsonSerializer jsonSerializer;
@@ -307,42 +304,5 @@ public class FilesharingConnector
         }
         return connectorCommon.executePut(SHARES_PART, Integer.toString(shareId), postParams,
                 XMLAnswerParser.getInstance(XMLAnswer.class));
-    }
-
-    public boolean setTag(int sourceId, int tagId) {
-        CompletableFuture<XMLAnswer> result = setTagAsync(sourceId, tagId);
-        return NextcloudResponseHelper.isStatusCodeOkayOrCreated(result);
-    }
-
-    public CompletableFuture<XMLAnswer> setTagAsync(int sourceId, int tagId) {
-        return connectorCommon.executePut(SYSTEM_TAGS_RELATIONS, sourceId + "/" + tagId, null,
-                XMLAnswerParser.getInstance(XMLAnswer.class));
-    }
-
-    public boolean removeTag(int sourceId, int tagId) {
-        return NextcloudResponseHelper.isStatusCodeOkay(removeTagAsync(sourceId, tagId));
-    }
-
-    public CompletableFuture<XMLAnswer> removeTagAsync(int sourceId, int tagId) {
-        return connectorCommon.executeDelete(SYSTEM_TAGS_RELATIONS, sourceId + "/" + tagId, null,
-                XMLAnswerParser.getInstance(XMLAnswer.class));
-    }
-
-    public boolean createTag(Tag tag) {
-        return NextcloudResponseHelper.isStatusCodeOkayOrCreated(createTagAsync(tag));
-    }
-
-    public CompletableFuture<XMLAnswer> createTagAsync(Tag tag) {
-        List<NameValuePair> postParams = Collections.singletonList(
-                new BasicNameValuePair("", jsonSerializer.toString(tag)));
-        return connectorCommon.executePost(SYSTEM_TAGS, postParams, XMLAnswerParser.getInstance(XMLAnswer.class));
-    }
-
-    public List<Tag> getTags() {
-        return NextcloudResponseHelper.getAndCheckStatus(getTagsAsync()).getTags();
-    }
-
-    public CompletableFuture<TagsXMLAnswer> getTagsAsync() {
-        return connectorCommon.executeGet(SYSTEM_TAGS, XMLAnswerParser.getInstance(TagsXMLAnswer.class));
     }
 }
