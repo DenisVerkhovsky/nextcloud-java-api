@@ -1,23 +1,9 @@
 package org.aarboard.nextcloud.api.utils;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
-import javax.net.ssl.SSLContext;
-
 import org.aarboard.nextcloud.api.ServerConfig;
 import org.aarboard.nextcloud.api.exception.NextcloudApiException;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -48,6 +34,21 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContexts;
 
+import javax.net.ssl.SSLContext;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
 public class ConnectorCommon
 {
     private final ServerConfig serverConfig;
@@ -76,11 +77,25 @@ public class ConnectorCommon
     }
 
     public <R> CompletableFuture<R> executePost(String part, List<NameValuePair> postParams, ResponseParser<R> parser) {
+        return executePost(part, null, postParams, null, parser);
+    }
+
+    public <R> CompletableFuture<R> executePost(String part, Map<String, String> headers,
+            List<NameValuePair> postParams, HttpEntity httpEntity,
+            ResponseParser<R> parser) {
         try {
             URI url= buildUrl(part, postParams, parser instanceof JsonAnswerParser);
 
-            HttpRequestBase request = new HttpPost(url.toString());
-            return executeRequest(parser, request);
+            HttpPost httpPost = new HttpPost(url.toString());
+            if (httpEntity != null) {
+                httpPost.setEntity(httpEntity);
+            }
+
+            if (headers != null) {
+                headers.forEach(httpPost::addHeader);
+            }
+
+            return executeRequest(parser, httpPost, ContentType.APPLICATION_JSON.getMimeType());
         } catch (IOException e) {
             throw new NextcloudApiException(e);
         }
@@ -151,15 +166,21 @@ public class ConnectorCommon
     }
 
     private <R> CompletableFuture<R> executeRequest(final ResponseParser<R> parser, HttpRequestBase request) throws IOException, ClientProtocolException {
+        return executeRequest(parser, request, "application/x-www-form-urlencoded");
+    }
+
+    private <R> CompletableFuture<R> executeRequest(final ResponseParser<R> parser, HttpRequestBase request,
+            String contentType) throws IOException, ClientProtocolException {
         // https://docs.nextcloud.com/server/14/developer_manual/core/ocs-share-api.html
         request.addHeader("OCS-APIRequest", "true");
-        request.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        request.addHeader(HttpHeaders.CONTENT_TYPE, contentType);
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
 
         HttpClientContext context = prepareContext();
 
         CompletableFuture<R> futureResponse = new CompletableFuture<>();
-        HttpAsyncClientSingleton.getInstance(serverConfig).execute(request, context, new ResponseCallback<>(parser, futureResponse));
+        HttpAsyncClientSingleton.getInstance(serverConfig)
+                .execute(request, context, new ResponseCallback<>(parser, futureResponse));
         return futureResponse;
     }
 
@@ -204,7 +225,7 @@ public class ConnectorCommon
 
         private R handleResponse(ResponseParser<R> parser, HttpResponse response) throws IOException {
             StatusLine statusLine= response.getStatusLine();
-            if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+            if (statusLine.getStatusCode() == HttpStatus.SC_OK || statusLine.getStatusCode() == HttpStatus.SC_CREATED) {
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
                     Charset charset = ContentType.getOrDefault(entity).getCharset();
@@ -212,6 +233,8 @@ public class ConnectorCommon
                     return parser.parseResponse(reader);
                 }
                 throw new NextcloudApiException("Empty response received");
+            } else if (statusLine.getStatusCode() == HttpStatus.SC_NO_CONTENT) {
+                return null;
             }
             throw new NextcloudApiException(String.format("Request failed with %d %s", statusLine.getStatusCode(), statusLine.getReasonPhrase()));
         }
