@@ -79,7 +79,7 @@ public class GroupFolders {
     }
 
     public void forbidAccess(int groupFolderId, String group) {
-        NextcloudResponseHelper.getAndCheckStatus(grantAccessAsync(groupFolderId, group));
+        NextcloudResponseHelper.getAndCheckStatus(forbidAccessAsync(groupFolderId, group));
     }
 
     public CompletableFuture<XMLAnswer> forbidAccessAsync(int groupFolderId, String group) {
