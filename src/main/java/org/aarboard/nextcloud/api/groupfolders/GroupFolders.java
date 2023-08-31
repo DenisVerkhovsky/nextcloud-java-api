@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class GroupFolders {
-    private final static String SYSTEM_TAGS = "/remote.php/dav/systemtags";
-    private final static String SYSTEM_TAGS_RELATIONS = "/remote.php/dav/systemtags-relations/files";
 
     private final static String GROUP_FOLDERS_ROOT = "apps/groupfolders/folders";
 
