@@ -45,16 +45,20 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class ConnectorCommon
 {
+    private final static List<CloseableHttpAsyncClient> clients = new ArrayList<>();
     private final ServerConfig serverConfig;
+    private final CloseableHttpAsyncClient client;
 
     public ConnectorCommon(ServerConfig serverConfig) {
         this.serverConfig = serverConfig;
+        this.client = createClient(serverConfig);
     }
 
     public <R> CompletableFuture<R> executeGet(String part, ResponseParser<R> parser) {
@@ -151,9 +155,9 @@ public class ConnectorCommon
 
         if (serverConfig.getAuthenticationConfig().usesBasicAuthentication()) {
             uB.setUserInfo(serverConfig.getAuthenticationConfig().getLoginName(),
-                serverConfig.getAuthenticationConfig().getPassword());
+                    serverConfig.getAuthenticationConfig().getPassword());
         }
-
+        
         if (queryParams != null) {
             uB.addParameters(queryParams);
         }
@@ -176,11 +180,17 @@ public class ConnectorCommon
         request.addHeader(HttpHeaders.CONTENT_TYPE, contentType);
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
 
+        if (serverConfig.getAuthenticationConfig().usesBearerTokenAuthentication()) {
+            String credentials = String.format("%s:%s", serverConfig.getAuthenticationConfig().getLoginName(),
+                    serverConfig.getAuthenticationConfig().getBearerToken());
+            String authHeader = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+            request.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
+        }
+
         HttpClientContext context = prepareContext();
 
         CompletableFuture<R> futureResponse = new CompletableFuture<>();
-        HttpAsyncClientSingleton.getInstance(serverConfig)
-                .execute(request, context, new ResponseCallback<>(parser, futureResponse));
+        client.execute(request, context, new ResponseCallback<>(parser, futureResponse));
         return futureResponse;
     }
 
@@ -250,37 +260,29 @@ public class ConnectorCommon
         }
     }
 
-	private static class HttpAsyncClientSingleton {
-		private static CloseableHttpAsyncClient HTTPC_CLIENT;
-		
-		private HttpAsyncClientSingleton(){}
-		
-		public static CloseableHttpAsyncClient getInstance(ServerConfig serverConfig)
-			throws IOException{
-			if (HTTPC_CLIENT == null) {
-				if (serverConfig.isTrustAllCertificates()) {
-					try {
-						SSLContext sslContext = SSLContexts.custom()
-							.loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
-						HTTPC_CLIENT = HttpAsyncClients.custom()
-							.setSSLHostnameVerifier((NoopHostnameVerifier.INSTANCE))
-							.setSSLContext(sslContext)
-							.build();
-					} catch (KeyManagementException | NoSuchAlgorithmException
-							| KeyStoreException e) {
-						throw new IOException(e);
-					} 
-					
-				} else {
-					HTTPC_CLIENT = HttpAsyncClients.createDefault();
-				}
-				
-				HTTPC_CLIENT.start();
-			}
-			return HTTPC_CLIENT;
-		}
-		
-	}
+    public CloseableHttpAsyncClient createClient(ServerConfig serverConfig) {
+        try {
+            CloseableHttpAsyncClient client;
+            if (serverConfig.isTrustAllCertificates()) {
+
+                SSLContext sslContext = SSLContexts.custom()
+                        .loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
+                client = HttpAsyncClients.custom()
+                        .setSSLHostnameVerifier((NoopHostnameVerifier.INSTANCE))
+                        .setSSLContext(sslContext)
+                        .build();
+            } else {
+                client = HttpAsyncClients.createDefault();
+            }
+
+            client.start();
+            clients.add(client);
+            return client;
+        } catch (KeyManagementException | NoSuchAlgorithmException
+                | KeyStoreException e) {
+            throw new NextcloudApiException(e);
+        }
+    }
 
     public interface ResponseParser<R> {
         R parseResponse(Reader reader);
@@ -291,8 +293,8 @@ public class ConnectorCommon
      * @throws IOException error on shutdown
      */
     public static void shutdown() throws IOException {
-            if(HttpAsyncClientSingleton.HTTPC_CLIENT != null) {
-                HttpAsyncClientSingleton.getInstance(null).close();
-            }		
+        for (CloseableHttpAsyncClient closeableHttpAsyncClient : clients) {
+            closeableHttpAsyncClient.close();
+        }
     }
 }
