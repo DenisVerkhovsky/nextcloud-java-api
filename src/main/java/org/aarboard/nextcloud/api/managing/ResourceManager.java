@@ -17,8 +17,6 @@ public class ResourceManager {
     private final static String SYSTEM_TAGS = "/remote.php/dav/systemtags";
     private final static String SYSTEM_TAGS_RELATIONS = "/remote.php/dav/systemtags-relations/files";
 
-    private final static String QUOTA = "apps/groupfolders/folders/";
-
     private final ConnectorCommon connectorCommon;
 
     private final JsonSerializer jsonSerializer;
