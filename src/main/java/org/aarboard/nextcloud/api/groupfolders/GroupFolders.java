@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class GroupFolders {
 
-    private final static String GROUP_FOLDERS_ROOT = "apps/groupfolders/folders";
+    private final static String GROUP_FOLDERS_ROOT = "index.php/apps/groupfolders/folders";
 
     private final ConnectorCommon connectorCommon;
 

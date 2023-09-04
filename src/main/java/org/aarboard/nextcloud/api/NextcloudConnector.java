@@ -140,7 +140,14 @@ public class NextcloudConnector {
      */
     public NextcloudConnector(String serverName, boolean useHTTPS, int port,
             AuthenticationConfig authenticationConfig) {
-        _serverConfig = new ServerConfig(serverName, useHTTPS, port, authenticationConfig);
+        this(new ServerConfig(serverName, useHTTPS, port, authenticationConfig));
+    }
+
+    /**
+     * @param serverConfig configuration for connecting to nextcloud
+     */
+    public NextcloudConnector(ServerConfig serverConfig) {
+        _serverConfig = serverConfig;
         pc = new ProvisionConnector(_serverConfig);
         fc = new FilesharingConnector(_serverConfig);
         cc = new ConfigConnector(_serverConfig);
