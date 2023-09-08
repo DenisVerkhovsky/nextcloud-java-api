@@ -14,6 +14,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -62,6 +63,15 @@ public class GroupFolders {
     public CompletableFuture<XMLAnswer> deleteGroupFolderAsync(int groupFolderId) {
         return connectorCommon.executeDelete(GROUP_FOLDERS_ROOT, String.valueOf(groupFolderId),
                 XMLAnswerParser.getInstance(XMLAnswer.class));
+    }
+
+    public Collection<GroupFolderInfo> getGroupFolders() {
+        return NextcloudResponseHelper.getAndCheckStatus(getGroupFoldersAsync()).getAllGroupFolders();
+    }
+
+    public CompletableFuture<GroupFoldersListAnswer> getGroupFoldersAsync() {
+        return connectorCommon.executeGet(GROUP_FOLDERS_ROOT,
+                JsonAnswerParser.getInstance(GroupFoldersListAnswer.class));
     }
 
     public void grantAccess(int groupFolderId, String group) {
