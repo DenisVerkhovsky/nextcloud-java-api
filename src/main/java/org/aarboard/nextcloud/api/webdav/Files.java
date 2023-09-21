@@ -1,23 +1,26 @@
 package org.aarboard.nextcloud.api.webdav;
 
 
-import com.github.sardine.DavResource;
-import com.github.sardine.Sardine;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.xml.namespace.QName;
-import org.aarboard.nextcloud.api.utils.WebdavInputStream;
+
 import org.aarboard.nextcloud.api.ServerConfig;
 import org.aarboard.nextcloud.api.exception.NextcloudApiException;
+import org.aarboard.nextcloud.api.utils.WebdavInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.sardine.DavResource;
+import com.github.sardine.Sardine;
 
 /**
  *
@@ -215,17 +218,7 @@ public class Files extends AWebdavHandler{
         {
             throw new NextcloudApiException(e);
         }
-        finally
-        {
-            try
-            {
-                sardine.shutdown();
-            }
-            catch(Exception ex2)
-            {
-                LOG.warn("Error in sardine shutdown", ex2);
-            }
-        }
+
         return in;
     }
     
