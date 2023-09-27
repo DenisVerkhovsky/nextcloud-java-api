@@ -16,6 +16,14 @@
  */
 package org.aarboard.nextcloud.api.filesharing;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
 import org.aarboard.nextcloud.api.ServerConfig;
 import org.aarboard.nextcloud.api.exception.MoreThanOneShareFoundException;
 import org.aarboard.nextcloud.api.provisioning.ShareData;
@@ -27,13 +35,6 @@ import org.aarboard.nextcloud.api.utils.XMLAnswerParser;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
 /**
  *
  * @author a.schild
@@ -44,7 +45,7 @@ import java.util.stream.Collectors;
  * remote.php ... stuff. Just use the root of your file store directly
  *
  */
-public class FilesharingConnector
+public class FilesharingConnector implements AutoCloseable
 {
     private final static String ROOT_PART= "ocs/v1.php/apps/files_sharing/api/v1/";
     private final static String SHARES_PART= ROOT_PART+"shares";
@@ -304,5 +305,10 @@ public class FilesharingConnector
         }
         return connectorCommon.executePut(SHARES_PART, Integer.toString(shareId), postParams,
                 XMLAnswerParser.getInstance(XMLAnswer.class));
+    }
+
+    @Override
+    public void close() throws IOException {
+        connectorCommon.close();
     }
 }

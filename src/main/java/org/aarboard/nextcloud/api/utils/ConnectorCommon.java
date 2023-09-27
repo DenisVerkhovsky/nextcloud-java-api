@@ -1,7 +1,25 @@
 package org.aarboard.nextcloud.api.utils;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+import javax.net.ssl.SSLContext;
+
 import org.aarboard.nextcloud.api.ServerConfig;
 import org.aarboard.nextcloud.api.exception.NextcloudApiException;
+import org.aarboard.nextcloud.api.exception.NextcloudApiResultException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
@@ -34,25 +52,8 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContexts;
 
-import javax.net.ssl.SSLContext;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
-public class ConnectorCommon
+public class ConnectorCommon implements AutoCloseable
 {
-    private final static List<CloseableHttpAsyncClient> clients = new ArrayList<>();
     private final ServerConfig serverConfig;
     private final CloseableHttpAsyncClient client;
 
@@ -242,11 +243,12 @@ public class ConnectorCommon
                     Reader reader = new InputStreamReader(entity.getContent(), charset);
                     return parser.parseResponse(reader);
                 }
-                throw new NextcloudApiException("Empty response received");
+                throw new NextcloudApiResultException("Empty response received", statusLine.getStatusCode());
             } else if (statusLine.getStatusCode() == HttpStatus.SC_NO_CONTENT) {
                 return null;
             }
-            throw new NextcloudApiException(String.format("Request failed with %d %s", statusLine.getStatusCode(), statusLine.getReasonPhrase()));
+            throw new NextcloudApiResultException(String.format("Request failed with %d %s", statusLine.getStatusCode(),
+                    statusLine.getReasonPhrase()), statusLine.getStatusCode());
         }
 
         @Override
@@ -276,7 +278,6 @@ public class ConnectorCommon
             }
 
             client.start();
-            clients.add(client);
             return client;
         } catch (KeyManagementException | NoSuchAlgorithmException
                 | KeyStoreException e) {
@@ -288,13 +289,8 @@ public class ConnectorCommon
         R parseResponse(Reader reader);
     }
 
-    /**
-     * Close the http client. Required for clean shutdown.
-     * @throws IOException error on shutdown
-     */
-    public static void shutdown() throws IOException {
-        for (CloseableHttpAsyncClient closeableHttpAsyncClient : clients) {
-            closeableHttpAsyncClient.close();
-        }
+    @Override
+    public void close() throws IOException {
+        client.close();
     }
 }

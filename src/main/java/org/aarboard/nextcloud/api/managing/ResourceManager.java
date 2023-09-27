@@ -1,5 +1,9 @@
 package org.aarboard.nextcloud.api.managing;
 
+import java.io.IOException;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.concurrent.CompletableFuture;
+
 import org.aarboard.nextcloud.api.ServerConfig;
 import org.aarboard.nextcloud.api.exception.NextcloudApiException;
 import org.aarboard.nextcloud.api.filesharing.Tag;
@@ -10,10 +14,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 
-import java.nio.charset.UnsupportedCharsetException;
-import java.util.concurrent.CompletableFuture;
-
-public class ResourceManager {
+public class ResourceManager implements AutoCloseable {
     private final static String SYSTEM_TAGS = "/remote.php/dav/systemtags";
     private final static String SYSTEM_TAGS_RELATIONS = "/remote.php/dav/systemtags-relations/files";
 
@@ -69,5 +70,10 @@ public class ResourceManager {
         } catch (UnsupportedCharsetException e) {
             throw new NextcloudApiException(e);
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        connectorCommon.close();
     }
 }

@@ -16,6 +16,7 @@
  */
 package org.aarboard.nextcloud.api.config;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,7 +29,7 @@ import org.aarboard.nextcloud.api.utils.XMLAnswerParser;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-public class ConfigConnector {
+public class ConfigConnector implements AutoCloseable {
 	
 	private final static String CONFIG_PART = "ocs/v2.php/apps/provisioning_api/api/v1/config/";
 	
@@ -98,5 +99,9 @@ public class ConfigConnector {
 	public boolean deleteAppConfigAppKeyEntry(String appConfigApp, String appConfigAppkey){
 		throw new UnsupportedOperationException();
 	}
-	
+
+	@Override
+	public void close() throws IOException {
+		connectorCommon.close();
+	}
 }

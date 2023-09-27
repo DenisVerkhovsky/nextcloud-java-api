@@ -1,15 +1,15 @@
 package org.aarboard.nextcloud.api.exception;
 
-public class NextcloudApiException extends RuntimeException {
+public class NextcloudApiResultException extends NextcloudApiException {
     private static final long serialVersionUID = 8088239559973590632L;
 
-    private Integer statusCode;
+    private int statusCode;
 
-    public NextcloudApiException(Throwable cause) {
+    public NextcloudApiResultException(Throwable cause) {
         super(cause);
     }
 
-    public NextcloudApiException(String message, int statusCode) {
+    public NextcloudApiResultException(String message, int statusCode) {
         super(message);
         this.statusCode = statusCode;
     }

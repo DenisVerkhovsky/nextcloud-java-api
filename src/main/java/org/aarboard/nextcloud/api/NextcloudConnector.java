@@ -16,6 +16,18 @@
  */
 package org.aarboard.nextcloud.api;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+
 import org.aarboard.nextcloud.api.config.ConfigConnector;
 import org.aarboard.nextcloud.api.filesharing.FilesharingConnector;
 import org.aarboard.nextcloud.api.filesharing.Share;
@@ -31,7 +43,6 @@ import org.aarboard.nextcloud.api.provisioning.UserData;
 import org.aarboard.nextcloud.api.provisioning.UserDetailsAnswer;
 import org.aarboard.nextcloud.api.provisioning.UserDetailsListAnswer;
 import org.aarboard.nextcloud.api.provisioning.UserListAnswer;
-import org.aarboard.nextcloud.api.utils.ConnectorCommon;
 import org.aarboard.nextcloud.api.utils.JsonListAnswer;
 import org.aarboard.nextcloud.api.utils.JsonVoidAnswer;
 import org.aarboard.nextcloud.api.utils.NextcloudResponseHelper;
@@ -42,18 +53,6 @@ import org.aarboard.nextcloud.api.webdav.ResourceProperties;
 import org.aarboard.nextcloud.api.webdav.pathresolver.NextcloudVersion;
 import org.aarboard.nextcloud.api.webdav.pathresolver.WebDavPathResolver;
 import org.aarboard.nextcloud.api.webdav.pathresolver.WebDavPathResolverBuilder;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 public class NextcloudConnector {
 
@@ -208,7 +207,9 @@ public class NextcloudConnector {
      * @throws IOException In case of IO errors
      */
     public void shutdown() throws IOException {
-        ConnectorCommon.shutdown();
+        pc.close();
+        fc.close();
+        cc.close();
     }
 
     /**

@@ -1,5 +1,11 @@
 package org.aarboard.nextcloud.api.groupfolders;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 import org.aarboard.nextcloud.api.ServerConfig;
 import org.aarboard.nextcloud.api.exception.NextcloudApiException;
 import org.aarboard.nextcloud.api.utils.ConnectorCommon;
@@ -13,12 +19,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
-public class GroupFolders {
+public class GroupFolders implements AutoCloseable {
 
     private final static String GROUP_FOLDERS_ROOT = "index.php/apps/groupfolders/folders";
 
@@ -125,5 +126,10 @@ public class GroupFolders {
         postParams.add(new BasicNameValuePair("quota", String.valueOf(quota * FileUtils.ONE_GB)));
 
         return connectorCommon.executePost(groupFolderQuotaPath, postParams, EmptyAnswerParser.getInstance());
+    }
+
+    @Override
+    public void close() throws IOException {
+        connectorCommon.close();
     }
 }

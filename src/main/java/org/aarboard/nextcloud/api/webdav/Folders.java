@@ -17,19 +17,21 @@
 package org.aarboard.nextcloud.api.webdav;
 
 
-import com.github.sardine.DavResource;
-import com.github.sardine.Sardine;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.aarboard.nextcloud.api.ServerConfig;
 import org.aarboard.nextcloud.api.exception.NextcloudApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.sardine.DavResource;
+import com.github.sardine.Sardine;
 
 /**
  *
@@ -120,7 +122,9 @@ public class Folders extends AWebdavHandler{
         }
         for (DavResource res : resources)
         {
-            if (excludeFolderNames && res.isDirectory()) {
+            if (getWebDavPathResolver().getWebDavPath().equals(res.getPath())) {
+                continue;
+            } else if (excludeFolderNames && res.isDirectory()) {
                 // Dont' return folders
             }
             else {

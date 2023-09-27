@@ -16,16 +16,21 @@
  */
 package org.aarboard.nextcloud.api.provisioning;
 
-import org.aarboard.nextcloud.api.ServerConfig;
-import org.aarboard.nextcloud.api.utils.*;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-
-import java.util.Collections;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+
+import org.aarboard.nextcloud.api.ServerConfig;
+import org.aarboard.nextcloud.api.utils.ConnectorCommon;
+import org.aarboard.nextcloud.api.utils.JsonAnswerParser;
+import org.aarboard.nextcloud.api.utils.JsonListAnswer;
+import org.aarboard.nextcloud.api.utils.JsonVoidAnswer;
+import org.aarboard.nextcloud.api.utils.NextcloudResponseHelper;
+import org.aarboard.nextcloud.api.utils.NextcloudSearch;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 
 /**
  *
@@ -34,7 +39,7 @@ import java.util.concurrent.CompletableFuture;
  * https://docs.nextcloud.com/server/11.0/admin_manual/configuration_user/user_provisioning_api.html
  *
  */
-public class ProvisionConnector
+public class ProvisionConnector implements AutoCloseable
 {
     private final static String ROOT_PART= "ocs/v1.php/cloud/";
     private final static String USER_PART= ROOT_PART+"user";
@@ -595,5 +600,10 @@ public class ProvisionConnector
     public CompletableFuture<GroupListAnswer> getGroupsAsync(String search, int limit, int offset) {
         NextcloudSearch nextcloudSearch = new NextcloudSearch(search, limit, offset);
         return connectorCommon.executeGet(GROUPS_PART, nextcloudSearch.asQueryParameters(), JsonAnswerParser.getInstance(GroupListAnswer.class));
+    }
+
+    @Override
+    public void close() throws IOException {
+        connectorCommon.close();
     }
 }
