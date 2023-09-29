@@ -6,13 +6,14 @@ import java.util.concurrent.CompletableFuture;
 import org.aarboard.nextcloud.api.ServerConfig;
 import org.aarboard.nextcloud.api.exception.NextcloudApiException;
 import org.aarboard.nextcloud.api.utils.ConnectorCommon;
+import org.aarboard.nextcloud.api.utils.NextcloudResponseHelper;
 import org.aarboard.nextcloud.api.utils.XMLAnswer;
 import org.aarboard.nextcloud.api.utils.XMLAnswerParser;
 
 public class Authentication implements AutoCloseable {
-    private final static String APP_PASSWORD = "ocs/v2.php/core/getapppassword";
-    private final static String REMOVE_APP_PASSWORD = "ocs/v2.php/core/apppassword";
-    private final static String AUTH = "ocs/v2.php/cloud/user?format=json";
+    private final static String CORE_AUTH_URL = "ocs/v2.php/core";
+    private final static String APP_PASSWORD = CORE_AUTH_URL + "/getapppassword";
+    private final static String REMOVE_APP_PASSWORD = "apppassword";
 
     private final ConnectorCommon connectorCommon;
 
@@ -45,8 +46,13 @@ public class Authentication implements AutoCloseable {
     /**
      * Invalidates and removes issued application token
      */
-    public void logout() {
-        connectorCommon.executeDelete(REMOVE_APP_PASSWORD, "", XMLAnswerParser.getInstance(XMLAnswer.class));
+    public boolean logout() {
+        return NextcloudResponseHelper.isStatusCodeOkay(logoutAsync());
+    }
+
+    public CompletableFuture<XMLAnswer> logoutAsync() {
+        return connectorCommon.executeDelete(CORE_AUTH_URL, REMOVE_APP_PASSWORD,
+                XMLAnswerParser.getInstance(XMLAnswer.class));
     }
 
     @Override
