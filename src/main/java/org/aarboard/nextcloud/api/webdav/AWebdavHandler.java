@@ -16,16 +16,14 @@
  */
 package org.aarboard.nextcloud.api.webdav;
 
-import com.github.sardine.Sardine;
-import com.github.sardine.SardineFactory;
 import java.io.BufferedReader;
-import com.github.sardine.impl.SardineImpl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+
 import org.aarboard.nextcloud.api.ServerConfig;
 import org.aarboard.nextcloud.api.exception.NextcloudApiException;
 import org.aarboard.nextcloud.api.provisioning.ProvisionConnector;
@@ -36,6 +34,10 @@ import org.aarboard.nextcloud.api.webdav.pathresolver.WebDavPathResolverBuilder;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.sardine.Sardine;
+import com.github.sardine.SardineFactory;
+import com.github.sardine.impl.SardineImpl;
 
 /**
  *
@@ -122,13 +124,17 @@ public abstract class AWebdavHandler
     {
         if (null == this.resolver)
         {
-            ProvisionConnector pc= new ProvisionConnector(_serverConfig);
-            User currentUser= pc.getCurrentUser();
-            this.resolver = WebDavPathResolverBuilder.get(WebDavPathResolverBuilder.TYPE.FILES)//
-                    .ofVersion(NextcloudVersion.get(getServerVersion()))
-                    .withUserName(currentUser.getId())
-                    .withBasePathSuffix("files")
-                    .withBasePathPrefix(_serverConfig.getSubPathPrefix()).build();
+            try (ProvisionConnector pc = new ProvisionConnector(_serverConfig)) {
+                User currentUser = pc.getCurrentUser();
+                this.resolver = WebDavPathResolverBuilder.get(WebDavPathResolverBuilder.TYPE.FILES)//
+                        .ofVersion(NextcloudVersion.get(getServerVersion()))
+                        .withUserName(currentUser.getId())
+                        .withBasePathSuffix("files")
+                        .withBasePathPrefix(_serverConfig.getSubPathPrefix())
+                        .build();
+            } catch (IOException ex) {
+                LOG.error("error in closing ProvisionConnector connector", ex);
+            }
         }
 
         return this.resolver;
