@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+
 import org.aarboard.nextcloud.api.exception.NextcloudApiException;
 import org.aarboard.nextcloud.api.utils.ConnectorCommon.ResponseParser;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 
 public class XMLAnswerParser<A extends XMLAnswer> implements ResponseParser<A>
 {

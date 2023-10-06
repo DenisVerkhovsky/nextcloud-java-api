@@ -158,7 +158,7 @@ public class ConnectorCommon implements AutoCloseable
             uB.setUserInfo(serverConfig.getAuthenticationConfig().getLoginName(),
                     serverConfig.getAuthenticationConfig().getPassword());
         }
-        
+
         if (queryParams != null) {
             uB.addParameters(queryParams);
         }
