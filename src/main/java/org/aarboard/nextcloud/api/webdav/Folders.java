@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.aarboard.nextcloud.api.ServerConfig;
 import org.aarboard.nextcloud.api.exception.NextcloudApiException;
@@ -100,27 +101,9 @@ public class Folders extends AWebdavHandler{
     {
         String pathPrefix = getWebdavPathPrefix();
         String path = buildWebdavPath(remotePath);
-
         List<String> retVal = new LinkedList<>();
-        Sardine sardine = buildAuthSardine();
-        List<DavResource> resources;
-        try {
-            resources = sardine.list(path, depth);
-        } catch (IOException e) {
-            throw new NextcloudApiException(e);
-        }
-        finally
-        {
-            try
-            {
-                sardine.shutdown();
-            }
-            catch (IOException ex)
-            {
-                LOG.warn("error in closing sardine connector", ex);
-            }
-        }
-        for (DavResource res : resources)
+
+        for (DavResource res : listRawFolderContent(remotePath, depth))
         {
             if (getWebDavPathResolver().getWebDavPath().equals(res.getPath())) {
                 continue;
@@ -147,6 +130,26 @@ public class Folders extends AWebdavHandler{
             }
         }
         return retVal;
+    }
+
+    public List<DavResource> listRawFolderContent(String remotePath, int depth) {
+        String path = buildWebdavPath(remotePath);
+        Sardine sardine = buildAuthSardine();
+        List<DavResource> resources;
+        try {
+            return sardine.list(path, depth)
+                    .stream()
+                    .filter(r -> !getWebDavPathResolver().getWebDavPath().equals(r.getPath()))
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new NextcloudApiException(e);
+        } finally {
+            try {
+                sardine.shutdown();
+            } catch (IOException ex) {
+                LOG.warn("error in closing sardine connector", ex);
+            }
+        }
     }
 
     /**
