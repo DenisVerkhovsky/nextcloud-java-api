@@ -1,6 +1,7 @@
 package org.aarboard.nextcloud.api.utils;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.aarboard.nextcloud.api.exception.NextcloudApiException;
 import org.aarboard.nextcloud.api.exception.NextcloudOperationFailedException;
@@ -37,7 +38,7 @@ public class NextcloudResponseHelper
     {
         try {
             return answer.get();
-        } catch (Exception e) {
+        } catch (ExecutionException | InterruptedException e) {
             throw new NextcloudApiException(e);
         }
     }
