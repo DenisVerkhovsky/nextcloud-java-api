@@ -105,7 +105,7 @@ public class Folders extends AWebdavHandler{
 
         for (DavResource res : listRawFolderContent(remotePath, depth))
         {
-            if (getWebDavPathResolver().getWebDavPath().equals(res.getPath())) {
+            if (getWebDavPathResolver().getWebDavPath(remotePath).equals(res.getPath())) {
                 continue;
             } else if (excludeFolderNames && res.isDirectory()) {
                 // Dont' return folders
@@ -139,7 +139,7 @@ public class Folders extends AWebdavHandler{
         try {
             return sardine.list(path, depth)
                     .stream()
-                    .filter(r -> !getWebDavPathResolver().getWebDavPath().equals(r.getPath()))
+                    .filter(r -> !getWebDavPathResolver().getWebDavPath(remotePath).equals(r.getPath()))
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new NextcloudApiException(e);
@@ -246,7 +246,6 @@ public class Folders extends AWebdavHandler{
 
             for (DavResource res : resources)
             {
-                System.out.println(res.getName());
                 //Skip the Documents folder which is listed as default as first by the sardine output
                 if(count != 0) {
                     if(res.isDirectory()) {
