@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.tsystems.tpam</groupId>
     <artifactId>nextcloud-api</artifactId>
-    <version>3.2.7-SNAPSHOT</version>
+    <version>3.2.8-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
         <!-- compile time dependencies -->
