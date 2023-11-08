@@ -135,7 +135,6 @@ public class Folders extends AWebdavHandler{
     public List<DavResource> listRawFolderContent(String remotePath, int depth) {
         String path = buildWebdavPath(remotePath);
         Sardine sardine = buildAuthSardine();
-        List<DavResource> resources;
         try {
             return sardine.list(path, depth)
                     .stream()

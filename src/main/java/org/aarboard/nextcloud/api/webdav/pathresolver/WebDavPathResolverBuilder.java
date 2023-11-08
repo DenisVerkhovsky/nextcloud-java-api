@@ -42,6 +42,7 @@ public class WebDavPathResolverBuilder
          * specifies to calculate the files path of the nextcloud instance
          */
         FILES("files"),
+        UPLOADS("uploads"),
         /**
          * VCARD path
          */
@@ -178,6 +179,7 @@ public class WebDavPathResolverBuilder
         {
             case FILES:
             case CALDAV:
+            case UPLOADS:
             case VCARD:
                 result = new FolderWebDavPathResolverImpl(valueMap.getOrDefault(NEXTCLOUD_WEBDAV_BASE_PATH, version.getWebdavBasePath()))
                         .setPathPrefix(valueMap.getOrDefault(NEXTCLOUD_WEBDAV_BASE_PATH_PREFIX, ""))

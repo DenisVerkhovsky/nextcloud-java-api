@@ -31,6 +31,7 @@ import org.aarboard.nextcloud.api.provisioning.User;
 import org.aarboard.nextcloud.api.webdav.pathresolver.NextcloudVersion;
 import org.aarboard.nextcloud.api.webdav.pathresolver.WebDavPathResolver;
 import org.aarboard.nextcloud.api.webdav.pathresolver.WebDavPathResolverBuilder;
+import org.aarboard.nextcloud.api.webdav.pathresolver.WebDavPathResolverBuilder.TYPE;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,22 +123,25 @@ public abstract class AWebdavHandler
      */
     protected WebDavPathResolver getWebDavPathResolver()
     {
-        if (null == this.resolver)
-        {
-            try (ProvisionConnector pc = new ProvisionConnector(_serverConfig)) {
-                User currentUser = pc.getCurrentUser();
-                this.resolver = WebDavPathResolverBuilder.get(WebDavPathResolverBuilder.TYPE.FILES)//
-                        .ofVersion(NextcloudVersion.get(getServerVersion()))
-                        .withUserName(currentUser.getId())
-                        .withBasePathSuffix("files")
-                        .withBasePathPrefix(_serverConfig.getSubPathPrefix())
-                        .build();
-            } catch (IOException ex) {
-                LOG.error("error in closing ProvisionConnector connector", ex);
-            }
+        if (null == this.resolver) {
+            this.resolver = getWebDavPathResolver(TYPE.FILES);
         }
-
         return this.resolver;
+    }
+
+    protected WebDavPathResolver getWebDavPathResolver(WebDavPathResolverBuilder.TYPE type) {
+        try (ProvisionConnector pc = new ProvisionConnector(_serverConfig)) {
+            User currentUser = pc.getCurrentUser();
+            return WebDavPathResolverBuilder.get(type)//
+                    .ofVersion(NextcloudVersion.get(getServerVersion()))
+                    .withUserName(currentUser.getId())
+                    .withBasePathSuffix(type.getSuffix())
+                    .withBasePathPrefix(_serverConfig.getSubPathPrefix())
+                    .build();
+        } catch (IOException ex) {
+            LOG.error("error in closing ProvisionConnector connector", ex);
+        }
+        return null;
     }
 
     /**
