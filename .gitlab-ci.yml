@@ -47,3 +47,22 @@ deploy:
     reports:
       junit:
         - ./**/target/surefire-reports/TEST-*.xml
+
+# ------------------------------------- TRIGGERS ---------------------------------------------------
+test-downstream-build:
+  stage: downstream
+  tags:
+    - build
+  script:
+    - git fetch
+    - git checkout ${CRD_SOURCE_BRANCH} || echo "Using default branch for building..."
+    - test -z "$CRD_PARENT_VERSION" || mvn versions:update-parent -DparentVersion=[${CRD_PARENT_VERSION}] -DallowSnapshots=true
+    - mvn versions:set -DnewVersion=${CRD_BUILD_VERSION}
+    - mvn install ${THREADS}
+    - mvn surefire:test -Dmaven.test.skip=false ${THREADS} -Ptests ${CRD_MAVEN_ARGUMENTS}
+  artifacts:
+    when: always
+    reports:
+      dotenv: ${VARIABLES_FILE}
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "pipeline" && $CRD_SOURCE_BRANCH != "dev" && $CRD_SOURCE_BRANCH !~ /^release\/.*$/'
