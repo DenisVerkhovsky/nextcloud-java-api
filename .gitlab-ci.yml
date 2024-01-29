@@ -13,6 +13,21 @@ stages:
   - sonar
   - triggers-services
 
+Dependency Check:
+  stage: test
+  allow_failure: true
+  tags:
+    - build
+  script:
+    - echo "Not implemented for nextcloud-api"
+
+Sonarqube Analysis:
+  stage: sonar
+  allow_failure: true
+  tags:
+    - build
+  script:
+    - echo "Not implemented for nextcloud-api"
 # ------------------------------------- TRIGGERS ---------------------------------------------------
 tpam-fts-client:
   extends: .trigger_template
