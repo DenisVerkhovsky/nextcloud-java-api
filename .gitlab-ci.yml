@@ -8,8 +8,10 @@ variables:
 
 stages:
   - test
-  - deploy
   - downstream
+  - deploy
+  - sonar
+  - triggers-services
 
 # ------------------------------------- TRIGGERS ---------------------------------------------------
 tpam-fts-client:
