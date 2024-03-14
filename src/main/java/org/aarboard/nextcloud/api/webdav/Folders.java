@@ -103,7 +103,7 @@ public class Folders extends AWebdavHandler{
         String path = buildWebdavPath(remotePath);
         List<String> retVal = new LinkedList<>();
 
-        for (DavResource res : listRawFolderContent(remotePath, depth))
+        for (DavResource res : listRawFolderContent(remotePath, depth, false))
         {
             if (getWebDavPathResolver().getWebDavPath(remotePath).equals(res.getPath())) {
                 continue;
@@ -132,11 +132,11 @@ public class Folders extends AWebdavHandler{
         return retVal;
     }
 
-    public List<DavResource> listRawFolderContent(String remotePath, int depth) {
+    public List<DavResource> listRawFolderContent(String remotePath, int depth, boolean allProperties) {
         String path = buildWebdavPath(remotePath);
         Sardine sardine = buildAuthSardine();
         try {
-            return sardine.list(path, depth)
+            return sardine.propfind(path, depth, Files.getResourcePropertyConfigurations(allProperties))
                     .stream()
                     .filter(r -> !getWebDavPathResolver().getWebDavPath(remotePath).equals(r.getPath()))
                     .collect(Collectors.toList());
